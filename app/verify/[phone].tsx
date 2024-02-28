@@ -40,7 +40,7 @@ const Page = () => {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ headerTitle: phone }} />
+      <Text style={[styles.legal, { fontSize: 22 }]}>{phone}</Text>
       <Text style={styles.legal}>
         We have sent you an SMS with a code to the number above.
       </Text>

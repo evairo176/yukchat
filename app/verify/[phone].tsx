@@ -117,14 +117,14 @@ const styles = StyleSheet.create({
     borderBottomColor: "#ccc",
     borderBottomWidth: 1,
   },
-  cellText: {
-    color: "#000",
-    fontSize: 36,
-    textAlign: "center",
-  },
   focusCell: {
     paddingBottom: 4,
     borderBottomColor: "#000",
     borderBottomWidth: 2,
+  },
+  cellText: {
+    color: "#000",
+    fontSize: 36,
+    textAlign: "center",
   },
 });

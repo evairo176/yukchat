@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Linking,
   Platform,
@@ -14,14 +15,21 @@ import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MaskInput from "react-native-mask-input";
+import {
+  isClerkAPIResponseError,
+  useSignIn,
+  useSignUp,
+} from "@clerk/clerk-expo";
 
 const Page = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("6281389003413");
   const router = useRouter();
 
   const keyboardVerticalOffset = Platform.OS === "ios" ? 90 : 0;
   const insets = useSafeAreaInsets();
+  const { signUp } = useSignUp();
+  const { signIn } = useSignIn();
 
   const GER_PHONE = [
     `+`,
@@ -35,6 +43,7 @@ const Page = () => {
     /\d/,
     /\d/,
     /\d/,
+    " ",
     /\d/,
     /\d/,
     /\d/,
@@ -46,18 +55,64 @@ const Page = () => {
     Linking.openURL("https://evairo-nice.vercel.app/");
   };
 
-  const sendOtp = () => {
+  const sendOtp = async () => {
+    console.log("sendOTP", phoneNumber);
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      await signUp!.create({
+        phoneNumber,
+      });
+      console.log("TESafter createT: ", signUp!.createdSessionId);
+
+      signUp!.preparePhoneNumberVerification();
+
+      console.log("after prepare: ");
       router.push(`/verify/${phoneNumber}`);
-    }, 2000);
+    } catch (err) {
+      console.log("error", JSON.stringify(err, null, 2));
+
+      if (isClerkAPIResponseError(err)) {
+        if (err.errors[0].code === "form_identifier_exists") {
+          // User signed up before
+          console.log("User signed up before");
+          await trySignIn();
+        } else {
+          setLoading(false);
+          Alert.alert("Error", err.errors[0].message);
+        }
+      }
+    }
   };
 
-  const trySignIn = () => {};
+  const trySignIn = async () => {
+    console.log("trySignIn", phoneNumber);
+
+    const { supportedFirstFactors } = await signIn!.create({
+      identifier: phoneNumber,
+    });
+
+    const firstPhoneFactor: any = supportedFirstFactors.find((factor: any) => {
+      return factor.strategy === "phone_code";
+    });
+
+    const { phoneNumberId } = firstPhoneFactor;
+
+    await signIn!.prepareFirstFactor({
+      strategy: "phone_code",
+      phoneNumberId,
+    });
+
+    router.push(`/verify/${phoneNumber}?signin=true`);
+    setLoading(false);
+  };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }}>
+    <KeyboardAvoidingView
+      behavior="padding"
+      keyboardVerticalOffset={keyboardVerticalOffset}
+      style={{ flex: 1 }}
+    >
       <View style={styles.container}>
         {loading && (
           <View style={[StyleSheet.absoluteFill, styles.loading]}>
@@ -86,8 +141,8 @@ const Page = () => {
               setPhoneNumber(masked); // you can use the unmasked value as well
 
               // assuming you typed "9" all the way:
-              console.log(masked); // (99) 99999-9999
-              console.log(unmasked); // 99999999999
+              // console.log(masked); // (99) 99999-9999
+              // console.log(unmasked); // 99999999999
             }}
             mask={GER_PHONE}
           />

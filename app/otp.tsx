@@ -1,19 +1,18 @@
-import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Linking,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
 import Colors from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Linking,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import MaskInput from "react-native-mask-input";
 import {
   isClerkAPIResponseError,
@@ -21,41 +20,38 @@ import {
   useSignUp,
 } from "@clerk/clerk-expo";
 
-const Page = () => {
-  const [loading, setLoading] = useState<boolean>(false);
-  const [phoneNumber, setPhoneNumber] = useState<string>("6281389003413");
-  const router = useRouter();
+const GER_PHONE = [
+  `+`,
+  /\d/,
+  /\d/,
+  " ",
+  /\d/,
+  /\d/,
+  /\d/,
+  " ",
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+  /\d/,
+];
 
+const Page = () => {
+  const [phoneNumber, setPhoneNumber] = useState("");
   const keyboardVerticalOffset = Platform.OS === "ios" ? 90 : 0;
-  const insets = useSafeAreaInsets();
-  const { signUp } = useSignUp();
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const { signUp, setActive } = useSignUp();
   const { signIn } = useSignIn();
 
-  const GER_PHONE = [
-    `+`,
-    /\d/,
-    /\d/,
-    " ",
-    /\d/,
-    /\d/,
-    /\d/,
-    " ",
-    /\d/,
-    /\d/,
-    /\d/,
-    " ",
-    /\d/,
-    /\d/,
-    /\d/,
-    /\d/,
-    /\d/,
-  ];
-
   const openLink = () => {
-    Linking.openURL("https://evairo-nice.vercel.app/");
+    Linking.openURL("https://galaxies.dev");
   };
 
-  const sendOtp = async () => {
+  const sendOTP = async () => {
     console.log("sendOTP", phoneNumber);
     setLoading(true);
 
@@ -63,7 +59,6 @@ const Page = () => {
       await signUp!.create({
         phoneNumber,
       });
-      console.log("abc");
       console.log("TESafter createT: ", signUp!.createdSessionId);
 
       signUp!.preparePhoneNumberVerification();
@@ -110,42 +105,39 @@ const Page = () => {
 
   return (
     <KeyboardAvoidingView
-      behavior="padding"
       keyboardVerticalOffset={keyboardVerticalOffset}
       style={{ flex: 1 }}
+      behavior="padding"
     >
+      {loading && (
+        <View style={[StyleSheet.absoluteFill, styles.loading]}>
+          <ActivityIndicator size="large" color={Colors.primary} />
+          <Text style={{ fontSize: 18, padding: 10 }}>Sending code...</Text>
+        </View>
+      )}
+
       <View style={styles.container}>
-        {loading && (
-          <View style={[StyleSheet.absoluteFill, styles.loading]}>
-            <ActivityIndicator size={"large"} color={Colors.primary} />
-            <Text style={{ marginTop: 10, fontSize: 18, padding: 10 }}>
-              Sending code...
-            </Text>
-          </View>
-        )}
         <Text style={styles.description}>
-          YukChat will need to verify your account, Carrier charges my apply.
+          WhatsApp will need to verify your account. Carrier charges may apply.
         </Text>
+
         <View style={styles.list}>
           <View style={styles.listItem}>
             <Text style={styles.listItemText}>Germany</Text>
             <Ionicons name="chevron-forward" size={20} color={Colors.gray} />
           </View>
-          <View style={styles.seperator} />
+          <View style={styles.separator} />
+
           <MaskInput
-            style={styles.input}
             value={phoneNumber}
             keyboardType="numeric"
             autoFocus
-            placeholder="+62 your phone number"
+            placeholder="+12 your phone number"
             onChangeText={(masked, unmasked) => {
-              setPhoneNumber(masked); // you can use the unmasked value as well
-
-              // assuming you typed "9" all the way:
-              // console.log(masked); // (99) 99999-9999
-              // console.log(unmasked); // 99999999999
+              setPhoneNumber(masked);
             }}
             mask={GER_PHONE}
+            style={styles.input}
           />
         </View>
 
@@ -167,10 +159,9 @@ const Page = () => {
           style={[
             styles.button,
             phoneNumber !== "" ? styles.enabled : null,
-            { marginBottom: Math.max(insets.bottom, 20) },
+            { marginBottom: 20 },
           ]}
-          onPress={sendOtp}
-          disabled={phoneNumber === ""}
+          onPress={sendOTP}
         >
           <Text
             style={[
@@ -186,42 +177,17 @@ const Page = () => {
   );
 };
 
-export default Page;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
-    gap: 20,
     padding: 20,
     backgroundColor: Colors.background,
+    gap: 20,
   },
   description: {
     fontSize: 14,
     color: Colors.gray,
-  },
-  list: {
-    backgroundColor: "#fff",
-    width: "100%",
-    borderRadius: 10,
-    padding: 10,
-  },
-  listItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 6,
-    marginBottom: 10,
-  },
-  listItemText: {
-    fontSize: 18,
-    color: Colors.primary,
-  },
-  seperator: {
-    width: "100%",
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: Colors.gray,
-    opacity: 0.4,
   },
   legal: {
     fontSize: 12,
@@ -247,6 +213,29 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "500",
   },
+  list: {
+    backgroundColor: "#fff",
+    width: "100%",
+    borderRadius: 10,
+    padding: 10,
+  },
+  listItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 6,
+    marginBottom: 10,
+  },
+  listItemText: {
+    fontSize: 18,
+    color: Colors.primary,
+  },
+  separator: {
+    width: "100%",
+    height: 1,
+    backgroundColor: Colors.gray,
+    opacity: 0.2,
+  },
   input: {
     backgroundColor: "#fff",
     width: "100%",
@@ -254,6 +243,7 @@ const styles = StyleSheet.create({
     padding: 6,
     marginTop: 10,
   },
+
   loading: {
     zIndex: 10,
     backgroundColor: "#fff",
@@ -261,3 +251,5 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
+
+export default Page;

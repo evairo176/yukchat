@@ -30,7 +30,6 @@ const Page = () => {
 
   useEffect(() => {
     if (code.length === 6) {
-      console.log("code", code);
       if (signin === "true") {
         verifySignIn();
       } else {
@@ -60,6 +59,8 @@ const Page = () => {
         strategy: "phone_code",
         code,
       });
+
+      console.log("verify");
 
       await setActive!({ session: signIn!.createdSessionId });
     } catch (err) {

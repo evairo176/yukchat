@@ -1,11 +1,13 @@
-import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Link, Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import * as SecureStore from "expo-secure-store";
 import { useEffect } from "react";
-import { View } from "react-native";
+import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
+import * as SecureStore from "expo-secure-store";
+import { TouchableOpacity, View } from "react-native";
+import Colors from "@/constants/Colors";
+import { Ionicons } from "@expo/vector-icons";
 
 const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -35,10 +37,10 @@ export {
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const RootLayout = () => {
-  const router = useRouter();
-  const segments = useSegments();
+const InitialLayout = () => {
   const { isLoaded, isSignedIn } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
@@ -60,7 +62,6 @@ const RootLayout = () => {
     if (!isLoaded) return;
 
     const inTabsGroup = segments[0] === "(tabs)";
-    console.log("isSignIn changed", isSignedIn);
 
     if (isSignedIn && !inTabsGroup) {
       router.replace("/(tabs)/chats");
@@ -81,17 +82,17 @@ const RootLayout = () => {
         options={{
           headerTitle: "Enter Your Phone Number",
           headerBackVisible: false,
-          headerTitleAlign: "center",
         }}
       />
       <Stack.Screen
         name="verify/[phone]"
         options={{
-          headerTitle: "Verify Your Phone Number",
+          title: "Verify Your Phone Number",
+          headerShown: true,
           headerBackTitle: "Edit number",
-          headerTitleAlign: "center",
         }}
       />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
     </Stack>
   );
 };
@@ -102,7 +103,7 @@ const RootLayoutNav = () => {
       publishableKey={CLERK_PUBLISHABLE_KEY!}
       tokenCache={tokenCache}
     >
-      <RootLayout />
+      <InitialLayout />
     </ClerkProvider>
   );
 };

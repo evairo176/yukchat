@@ -63,6 +63,7 @@ const Page = () => {
       await signUp!.create({
         phoneNumber,
       });
+      console.log("abc");
       console.log("TESafter createT: ", signUp!.createdSessionId);
 
       signUp!.preparePhoneNumberVerification();

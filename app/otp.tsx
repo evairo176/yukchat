@@ -140,7 +140,6 @@ const Page = () => {
             style={styles.input}
           />
         </View>
-
         <Text style={styles.legal}>
           You must be{" "}
           <Text style={styles.link} onPress={openLink}>
